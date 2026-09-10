@@ -1,0 +1,38 @@
+name: Build HungerGuard mod
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew || true
+
+      - name: Generate Gradle wrapper (if missing)
+        run: |
+          if [ ! -f gradlew ]; then
+            gradle wrapper --gradle-version 8.10
+            chmod +x gradlew
+          fi
+
+      - name: Build mod jar
+        run: ./gradlew build --no-daemon
+
+      - name: Upload built jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: HungerGuard-jar
+          path: build/libs/*.jar
